@@ -1,0 +1,109 @@
+﻿@page "/student/{studentId:int}"
+@inject StudentClient StudentClient
+@inject NavigationManager NavigationManager
+
+@if (Student == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <div class="my-container">
+        <h2>Edit Student</h2>
+        <EditForm Model="Student" class="my-container" OnValidSubmit="UpdateStudent">
+            <div class="form-field">
+                <label>Name:</label>
+                <div>
+                    <InputText @bind-Value="Student.Name" />
+                    <ValidationMessage For="@(() => Student.Name)" />
+                </div>
+            </div>
+            <div class="form-field">
+                <label>Address1:</label>
+                <div>
+                    <InputText @bind-Value="Student.Address1" />
+                    <ValidationMessage For="@(() => Student.Address1)" />
+                </div>
+            </div>
+            <div class="form-field">
+                <label>Address2:</label>
+                <div>
+                    <InputText @bind-Value="Student.Address2" />
+                    <ValidationMessage For="@(() => Student.Address2)" />
+                </div>
+            </div>
+            <div class="form-field">
+                <label>City:</label>
+                <div>
+                    <InputText @bind-Value="Student.City" />
+                    <ValidationMessage For="@(() => Student.City)" />
+                </div>
+            </div>
+            <div class="form-field">
+                <label>State:</label>
+                <div>
+                    <InputText @bind-Value="Student.State" />
+                    <ValidationMessage For="@(() => Student.State)" />
+                </div>
+            </div>
+            <div class="form-field">
+                <label>PhoneNumber:</label>
+                <div>
+                    <InputText @bind-Value="Student.PhoneNumber" />
+                    <ValidationMessage For="@(() => Student.PhoneNumber)" />
+                </div>
+            </div>
+            <div class="form-field">
+                <label>Age:</label>
+                <div>
+                    <InputNumber @bind-Value="Student.Age" />
+                    <ValidationMessage For="@(() => Student.Age)" />
+                </div>
+            </div>
+
+            <div class="my-button">
+                <Button @ref="saveButton" Type="ButtonType.Submit" Color="ButtonColor.Primary" Class="my-button" Outline="true"> Update Student </Button>
+            </div>
+
+            <div class="my-button">
+                <Button Color="ButtonColor.Secondary" Class="my-button" Outline="true" @onclick="Cancel"> Cancel </Button>
+            </div>
+
+            <div class="my-button">
+                <Button Color="ButtonColor.Danger" Class="my-button" Outline="true" @onclick="async () => await RemoveStudent()"> Delete </Button>
+            </div>
+            <DataAnnotationsValidator />
+        </EditForm>
+
+        
+    </div>
+}
+
+@code {
+    [Parameter] public int StudentId { get; set; }
+    public StudentVM Student { get; set; }
+    private Button saveButton;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Student = await StudentClient.GetStudent(StudentId);
+    }
+
+    async Task UpdateStudent()
+    {
+        saveButton?.ShowLoading("Saving ...");
+        await StudentClient.UpdateStudent(Student);
+        saveButton?.HideLoading();
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("");
+    }
+
+    async Task RemoveStudent()
+    {
+        await StudentClient.RemoveStudent(Student.ID);
+        NavigationManager.NavigateTo("");
+    }
+}

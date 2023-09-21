@@ -1,0 +1,151 @@
+﻿@page "/"
+@inject StudentClient StudentClient
+@inject NavigationManager NavigationManager
+
+<Grid @ref="grid" TItem="StudentVM"
+      AllowRowClick="true"
+      AllowSorting="true"
+      Class="table table-hover"
+      Data="students"
+      HeaderRowCssClass="bg-primary text-white border-bottom-0"
+      OnRowClick="OnRowClick"
+      AllowPaging="true"
+      PageSize="10"
+      ItemsPerPageText="Students"
+      PaginationItemsTextFormat="{0} - {1} of {2} Students"
+      PageSizeSelectorVisible="true"
+      PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+      Responsive="true">
+
+    <GridColumn TItem="StudentVM" HeaderText="Name" SortKeySelector="item => item.Name">
+        @context.Name
+    </GridColumn>
+
+    <GridColumn TItem="StudentVM" HeaderText="Address1" SortKeySelector="item => item.Address1">
+        @context.Address1
+    </GridColumn>
+
+    <GridColumn TItem="StudentVM" HeaderText="Address2" SortKeySelector="item => item.Address2">
+        @context.Address2
+    </GridColumn>
+
+    <GridColumn TItem="StudentVM" HeaderText="City" SortKeySelector="item => item.City">
+        @context.City
+    </GridColumn>
+
+    <GridColumn TItem="StudentVM" HeaderText="State" SortKeySelector="item => item.State">
+        @context.State
+    </GridColumn>
+
+    <GridColumn TItem="StudentVM" HeaderText="PhoneNumber" SortKeySelector="item => item.PhoneNumber">
+        @context.PhoneNumber
+    </GridColumn>
+
+    <GridColumn TItem="StudentVM" HeaderText="Age" SortKeySelector="item => item.Age">
+        @context.Age
+    </GridColumn>
+</Grid>
+
+<Modal @ref="modal" Title="Add Student" IsScrollable="true">
+    <BodyTemplate>
+        <div class="my-container">
+            <EditForm Model="Student" class="my-container" OnValidSubmit="AddStudent">
+                <div class="form-field">
+                    <label>Name:</label>
+                    <div>
+                        <InputText @bind-Value="Student.Name" />
+                        <ValidationMessage For="@(() => Student.Name)" />
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Address1:</label>
+                    <div>
+                        <InputText @bind-Value="Student.Address1" />
+                        <ValidationMessage For="@(() => Student.Address1)" />
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Address2:</label>
+                    <div>
+                        <InputText @bind-Value="Student.Address2" />
+                        <ValidationMessage For="@(() => Student.Address2)" />
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>City:</label>
+                    <div>
+                        <InputText @bind-Value="Student.City" />
+                        <ValidationMessage For="@(() => Student.City)" />
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>State:</label>
+                    <div>
+                        <InputText @bind-Value="Student.State" />
+                        <ValidationMessage For="@(() => Student.State)" />
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>PhoneNumber:</label>
+                    <div>
+                        <InputText @bind-Value="Student.PhoneNumber" />
+                        <ValidationMessage For="@(() => Student.PhoneNumber)" />
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Age:</label>
+                    <div>
+                        <InputNumber @bind-Value="Student.Age" />
+                        <ValidationMessage For="@(() => Student.Age)" />
+                    </div>
+                </div>
+                <div class="my-button">
+                    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" Class="my-button" Outline="true"> Add Student </Button>
+                </div>
+                <DataAnnotationsValidator />
+            </EditForm>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+    </FooterTemplate>
+</Modal>
+
+<div class="my-container my-button">
+    <Button Color="ButtonColor.Primary" Size="Size.Large" Outline="true" @onclick="async () => await OnShowModalClick()"> Add Student </Button>
+</div>
+
+@code {
+    Grid<StudentVM> grid;
+    public StudentVM Student { get; set; } = new StudentVM { Name = "", Address1 = "", PhoneNumber = "", City = "", State = "", Age = 1 };
+    List<StudentVM> students;
+    private Modal modal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        students = await StudentClient.GetStudents();
+    }
+
+    private async Task OnShowModalClick()
+    {
+        await modal?.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal?.HideAsync();
+    }
+
+    private async Task OnRowClick(GridRowEventArgs<StudentVM> args)
+    {
+        NavigationManager.NavigateTo($"student/{args.Item.ID}");
+    }
+
+    private async Task AddStudent()
+    {
+        var newStudent = await StudentClient.AddStudent(Student);
+        students.Add(newStudent);
+        await grid.RefreshDataAsync();
+        await modal?.HideAsync();
+    }
+}
